@@ -41,7 +41,7 @@
         <div class="grid" id="battleGrid"></div>
         <aside class="side">
           <div class="stats"><div class="stat"><b id="shots">0</b><span>射擊</span></div><div class="stat"><b id="hits">0</b><span>命中</span></div><div class="stat"><b id="shipsLeft">5</b><span>剩餘船</span></div></div>
-          <div class="ship-list" id="shipList"><div class="result-banner">船隻大小會在全部猜中後公布。</div></div>
+          <div class="ship-list" id="shipList"><div class="result-banner">船隻大小會在該艘船完整命中後公布。</div></div>
           <div class="result-banner" id="battleMsg">點擊格子開始猜測。</div>
           <button class="btn danger" id="newBattleBtn">重新開局</button>
         </aside>
@@ -66,8 +66,8 @@ let ships=[], board=[], fired=new Set(), battleOver=false;
 function newBattle(){board=Array.from({length:10},()=>Array(10).fill(null));ships=[];fired.clear();battleOver=false;[5,4,3,2,1].forEach((size,idx)=>placeShip(size,idx));renderBattle();updateBattle('點擊格子開始猜測。')}
 function placeShip(size,id){while(true){let horizontal=Math.random()<.5, r=Math.floor(Math.random()*(horizontal?10:11-size)), c=Math.floor(Math.random()*(horizontal?11-size:10));let cells=[];for(let i=0;i<size;i++)cells.push([r+(horizontal?0:i),c+(horizontal?i:0)]);if(cells.every(([rr,cc])=>!board[rr][cc])){let ship={id,size,hits:0,cells};ships.push(ship);cells.forEach(([rr,cc])=>board[rr][cc]=ship);return}}}
 function renderBattle(){const grid=$('#battleGrid');grid.innerHTML='';for(let r=0;r<10;r++){for(let c=0;c<10;c++){let b=document.createElement('button');b.className='cell';b.setAttribute('aria-label',`${r+1}-${c+1}`);b.onclick=()=>fire(r,c,b);grid.appendChild(b)}}renderShips();updateStats()}
-function fire(r,c,btn){if(battleOver)return;let key=r+','+c;if(fired.has(key))return;fired.add(key);let ship=board[r][c];if(ship){ship.hits++;btn.classList.add('hit');btn.textContent='✕';if(ship.hits===ship.size){updateBattle('命中！有一艘船已被完整找出，但船的大小先保密。')}else updateBattle('命中！')}else{btn.classList.add('miss');btn.textContent='•';updateBattle('沒中，換下一格試試。')}renderShips();updateStats();if(ships.every(s=>s.hits===s.size)){battleOver=true;ships.forEach(s=>s.cells.forEach(([rr,cc])=>$('#battleGrid').children[rr*10+cc].classList.add('sunk')));renderShips(true);updateBattle(`全部擊沉！總共射擊 ${fired.size} 次，現在公布船隻大小。`)}}
-function renderShips(reveal=false){let list=$('#shipList');list.innerHTML='';if(!reveal){list.innerHTML='<div class="result-banner">船隻大小會在全部猜中後公布。</div>';return}ships.slice().sort((a,b)=>b.size-a.size).forEach(s=>list.insertAdjacentHTML('beforeend',`<div class="ship done"><span>${s.size} 格船</span><b>已找到</b></div>`))}
+function fire(r,c,btn){if(battleOver)return;let key=r+','+c;if(fired.has(key))return;fired.add(key);let ship=board[r][c];if(ship){ship.hits++;btn.classList.add('hit');btn.textContent='✕';if(ship.hits===ship.size){ship.cells.forEach(([rr,cc])=>$('#battleGrid').children[rr*10+cc].classList.add('sunk'));updateBattle(`擊沉！你完整找出 ${ship.size} 格船。`)}else updateBattle('命中！')}else{btn.classList.add('miss');btn.textContent='•';updateBattle('沒中，換下一格試試。')}renderShips();updateStats();if(ships.every(s=>s.hits===s.size)){battleOver=true;updateBattle(`全部擊沉！總共射擊 ${fired.size} 次。`)}}
+function renderShips(){let list=$('#shipList');list.innerHTML='';let sunk=ships.filter(s=>s.hits===s.size).sort((a,b)=>b.size-a.size);if(!sunk.length){list.innerHTML='<div class="result-banner">船隻大小會在該艘船完整命中後公布。</div>';return}sunk.forEach(s=>list.insertAdjacentHTML('beforeend',`<div class="ship done"><span>${s.size} 格船</span><b>已擊沉</b></div>`));let left=ships.filter(s=>s.hits<s.size).length;if(left>0)list.insertAdjacentHTML('beforeend',`<div class="result-banner">尚有 ${left} 艘船未完整找出。</div>`)}
 function updateStats(){let hitCount=ships.reduce((n,s)=>n+s.hits,0);$('#shots').textContent=fired.size;$('#hits').textContent=hitCount;$('#shipsLeft').textContent=ships.filter(s=>s.hits<s.size).length}
 function updateBattle(t){$('#battleMsg').textContent=t}
 $('#newBattleBtn').onclick=newBattle;
