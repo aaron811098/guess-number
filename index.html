@@ -512,7 +512,7 @@
 <body>
   <div class="app-shell" id="appShell">
     <section class="screen active" id="homeScreen" aria-label="首頁">
-      <div class="status-bar"><span data-clock>20:21</span><span class="battery-wrap"><span data-battery-text>52%</span><span class="battery"><span class="battery-level" data-battery-level></span></span></span></div>
+      <div class="status-bar"><span data-clock>20:21</span><span class="battery-wrap"><span data-battery-text>--%</span><span class="battery"><span class="battery-level" data-battery-level></span></span></span></div>
       <main class="hero">
         <div class="gamepad-wrap" aria-hidden="true">
           <svg class="gamepad-svg" viewBox="0 0 360 250" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -542,7 +542,7 @@
     </section>
 
     <section class="screen" id="guessScreen" aria-label="猜數字 1A2B">
-      <div class="status-bar"><span data-clock>20:21</span><span class="battery-wrap"><span data-battery-text>52%</span><span class="battery"><span class="battery-level" data-battery-level></span></span></span></div>
+      <div class="status-bar"><span data-clock>20:21</span><span class="battery-wrap"><span data-battery-text>--%</span><span class="battery"><span class="battery-level" data-battery-level></span></span></span></div>
       <header class="top-line"><h1 class="page-title">猜數字 1A2B</h1><button class="home-btn" type="button" data-go="home" aria-label="回首頁"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5H15v-6h-6v6H3.5a.5.5 0 0 1-.5-.5v-9.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button></header>
       <div class="cyber-panel rules cut">
         <svg class="target-icon" viewBox="0 0 64 64" fill="none"><path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="20" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="7" stroke="currentColor" stroke-width="3"/></svg>
@@ -559,7 +559,7 @@
     </section>
 
     <section class="screen" id="battleScreen" aria-label="海戰棋">
-      <div class="status-bar"><span data-clock>20:21</span><span class="battery-wrap"><span data-battery-text>52%</span><span class="battery"><span class="battery-level" data-battery-level></span></span></span></div>
+      <div class="status-bar"><span data-clock>20:21</span><span class="battery-wrap"><span data-battery-text>--%</span><span class="battery"><span class="battery-level" data-battery-level></span></span></span></div>
       <header class="top-line"><h1 class="page-title">海戰棋</h1><button class="home-btn" type="button" data-go="home" aria-label="回首頁"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5H15v-6h-6v6H3.5a.5.5 0 0 1-.5-.5v-9.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button></header>
       <section class="cyber-panel battle-stats cut">
         <div class="stat shots"><div class="stat-top"><svg viewBox="0 0 64 64" fill="none"><path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="20" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="7" stroke="currentColor" stroke-width="3"/></svg><span id="shotCount">0</span></div><div class="stat-label">射擊</div></div>
@@ -598,7 +598,7 @@
       battleShots: 0,
       battleHits: 0,
       battleOver: false,
-      battery: 52
+      battery: null
     };
 
     const icons = {
@@ -638,19 +638,34 @@
     function updateBatteryUI(percent) {
       const p = Math.max(0, Math.min(100, Math.round(percent)));
       $$('[data-battery-text]').forEach(el => el.textContent = `${p}%`);
-      $$('[data-battery-level]').forEach(el => el.style.width = `${p}%`);
+      $$('[data-battery-level]').forEach(el => {
+        el.style.width = `${p}%`;
+        el.style.opacity = '1';
+      });
+    }
+
+    function setBatteryUnavailable() {
+      // iOS Safari / iPhone 上多數瀏覽器基於隱私限制，不提供真實電量 API。
+      // 不顯示假電量，避免讓使用者誤會。
+      $$('[data-battery-text]').forEach(el => el.textContent = '--%');
+      $$('[data-battery-level]').forEach(el => {
+        el.style.width = '42%';
+        el.style.opacity = '.45';
+      });
     }
 
     async function setupBattery() {
-      updateBatteryUI(state.battery);
+      setBatteryUnavailable();
       try {
-        if ('getBattery' in navigator) {
-          const b = await navigator.getBattery();
-          const set = () => updateBatteryUI(b.level * 100);
-          set();
-          b.addEventListener('levelchange', set);
-        }
-      } catch (e) {}
+        if (!('getBattery' in navigator)) return;
+        const battery = await navigator.getBattery();
+        const set = () => updateBatteryUI(battery.level * 100);
+        set();
+        battery.addEventListener('levelchange', set);
+        battery.addEventListener('chargingchange', set);
+      } catch (e) {
+        setBatteryUnavailable();
+      }
     }
 
     function randomSecret() {
