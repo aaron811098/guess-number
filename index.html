@@ -1,853 +1,245 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#050717" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>員工特休計算系統</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#fff7ed" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="小遊戲" />
-  <title>小遊戲中心</title>
-  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="%23050717"/><path d="M35 60h58c14 0 22 10 24 24 2 14-6 22-17 15l-15-10H43L28 99c-11 7-19-1-17-15 2-14 10-24 24-24Z" fill="none" stroke="%2300d8ff" stroke-width="7"/><path d="M37 76h22M48 65v22" stroke="%23ffd74a" stroke-width="7" stroke-linecap="round"/><circle cx="82" cy="72" r="5" fill="%2388ffcb"/><circle cx="96" cy="78" r="5" fill="%23ff4fa3"/><circle cx="91" cy="62" r="5" fill="%23865cff"/><path d="M56 49h16M80 49h10" stroke="%23bd57ff" stroke-width="5" stroke-linecap="round"/></svg>' />
+  <meta name="apple-mobile-web-app-title" content="特休計算" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      --bg: #050717;
-      --bg2: #090b22;
-      --panel: rgba(6, 12, 34, .72);
-      --panel2: rgba(9, 17, 47, .86);
-      --line: rgba(0, 217, 255, .45);
-      --cyan: #00e5ff;
-      --blue: #3f7cff;
-      --purple: #bf49ff;
-      --pink: #ff4fb7;
-      --gold: #ffd447;
-      --red: #ff4f72;
-      --green: #42ffc3;
-      --text: #f4f8ff;
-      --muted: #9eb1d8;
-      --darkText: #101422;
-      --shadowCyan: 0 0 14px rgba(0, 229, 255, .7), 0 0 36px rgba(0, 108, 255, .28);
-      --shadowPurple: 0 0 14px rgba(191, 73, 255, .72), 0 0 38px rgba(191, 73, 255, .25);
-      --radius: 24px;
-      --safeTop: env(safe-area-inset-top, 0px);
-      --safeBottom: env(safe-area-inset-bottom, 0px);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    :root{
+      --bg1:#fff7ed;--bg2:#eff6ff;--card:rgba(255,255,255,.82);--white:#fff;--text:#1f2937;--muted:#64748b;
+      --primary:#fb7185;--primary2:#e11d48;--accent:#e11d48;--blue:#3b82f6;--danger:#ef4444;
+      --border:rgba(255,255,255,.85);--line:#ffe4e6;--shadow:0 22px 55px rgba(225,29,72,.14);--radius:28px
     }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin: 0; min-height: 100%; background: #030511; color: var(--text); }
-    body {
-      overflow-x: hidden;
-      background:
-        radial-gradient(circle at 18% 10%, rgba(0, 229, 255, .13), transparent 28%),
-        radial-gradient(circle at 78% 12%, rgba(191, 73, 255, .16), transparent 30%),
-        radial-gradient(circle at 50% 100%, rgba(0, 102, 255, .18), transparent 42%),
-        linear-gradient(180deg, #02030c 0%, #050717 42%, #030411 100%);
-    }
-
-    button, input { font: inherit; }
-    button { cursor: pointer; border: 0; }
-
-    .app-shell {
-      width: min(100%, 520px);
-      min-height: 100svh;
-      margin: 0 auto;
-      position: relative;
-      isolation: isolate;
-      overflow: hidden;
-      background:
-        linear-gradient(180deg, rgba(9, 14, 40, .45), rgba(3, 5, 17, .96)),
-        radial-gradient(circle at 50% 3%, rgba(0, 229, 255, .08), transparent 34%);
-      border-inline: 1px solid rgba(123, 161, 255, .18);
-      box-shadow: 0 0 80px rgba(0, 0, 0, .6);
-    }
-
-    .app-shell::before,
-    .app-shell::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: -1;
-    }
-    .app-shell::before {
-      background-image:
-        radial-gradient(circle, rgba(0, 229, 255, .85) 0 1px, transparent 1.8px),
-        radial-gradient(circle, rgba(255, 78, 207, .75) 0 1px, transparent 1.8px),
-        radial-gradient(circle, rgba(255, 212, 71, .8) 0 1px, transparent 1.8px);
-      background-size: 98px 98px, 144px 144px, 211px 211px;
-      background-position: 20px 30px, 50px 85px, 7px 24px;
-      opacity: .32;
-      animation: stars 16s linear infinite;
-    }
-    .app-shell::after {
-      background:
-        linear-gradient(to bottom, transparent 0 66%, rgba(0, 136, 255, .16) 66%, transparent 100%),
-        linear-gradient(to right, rgba(0, 229, 255, .25) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 229, 255, .16) 1px, transparent 1px);
-      background-size: 100% 100%, 48px 48px, 48px 48px;
-      background-position: 0 0, center bottom, center bottom;
-      mask-image: linear-gradient(to bottom, transparent 0, transparent 63%, #000 86%, #000 100%);
-      opacity: .55;
-      transform: perspective(260px) rotateX(58deg) translateY(31%);
-      transform-origin: bottom;
-    }
-    @keyframes stars { from { transform: translateY(0); } to { transform: translateY(-28px); } }
-
-    .screen {
-      display: none;
-      min-height: 100svh;
-      padding: calc(18px + var(--safeTop)) 16px calc(22px + var(--safeBottom));
-      animation: screenIn .24s ease-out both;
-    }
-    .screen.active { display: block; }
-    @keyframes screenIn { from { opacity: 0; transform: translateY(10px) scale(.992); } to { opacity: 1; transform: none; } }
-
-    .status-bar {
-      height: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      color: #fff;
-      font-weight: 650;
-      letter-spacing: .3px;
-      font-size: 15px;
-      margin-bottom: 12px;
-      padding-inline: 8px;
-      text-shadow: 0 0 12px rgba(255,255,255,.25);
-    }
-    .top-line {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 56px;
-      position: relative;
-      margin-bottom: 14px;
-    }
-    .title {
-      margin: 0;
-      font-size: clamp(28px, 9vw, 44px);
-      line-height: 1.05;
-      letter-spacing: .02em;
-      text-align: center;
-      font-weight: 900;
-      text-shadow: 0 0 10px rgba(255,255,255,.65), 0 0 24px rgba(0,229,255,.38), 0 0 42px rgba(191,73,255,.22);
-    }
-    .page-title {
-      font-size: clamp(25px, 7vw, 34px);
-      font-weight: 880;
-      text-align: center;
-      letter-spacing: .02em;
-      margin: 0;
-      text-shadow: 0 0 10px rgba(255,255,255,.5), 0 0 26px rgba(85, 115, 255, .4);
-    }
-    .home-btn {
-      position: absolute;
-      right: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, rgba(0, 229, 255, .12), rgba(122, 70, 255, .22));
-      border: 1px solid rgba(0, 229, 255, .78);
-      color: #fff;
-      box-shadow: var(--shadowCyan), inset 0 0 18px rgba(63, 124, 255, .18);
-      display: grid;
-      place-items: center;
-    }
-    .home-btn:active { transform: translateY(-50%) scale(.94); }
-    .home-btn svg { width: 28px; height: 28px; filter: drop-shadow(0 0 8px rgba(0,229,255,.8)); }
-
-    .cyber-panel,
-    .cyber-card,
-    .history,
-    .toast,
-    .modal-card {
-      position: relative;
-      background:
-        linear-gradient(180deg, rgba(9, 16, 45, .76), rgba(5, 9, 30, .92)) padding-box,
-        linear-gradient(135deg, rgba(0,229,255,.9), rgba(63,124,255,.3) 48%, rgba(191,73,255,.9)) border-box;
-      border: 1px solid transparent;
-      border-radius: 24px;
-      box-shadow: 0 0 25px rgba(0, 102, 255, .18), inset 0 0 25px rgba(0, 229, 255, .045);
-      overflow: hidden;
-    }
-    .cyber-panel::before,
-    .cyber-card::before,
-    .history::before,
-    .modal-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(90deg, transparent, rgba(0,229,255,.08), transparent),
-        radial-gradient(circle at 10% 0, rgba(0,229,255,.13), transparent 35%),
-        radial-gradient(circle at 90% 100%, rgba(191,73,255,.12), transparent 35%);
-    }
-    .cut {
-      clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
-      border-radius: 0;
-    }
-
-    .hero {
-      min-height: calc(100svh - 70px - var(--safeTop) - var(--safeBottom));
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      padding-top: 18px;
-    }
-    .gamepad-wrap {
-      width: min(68vw, 300px);
-      margin: 2px auto 10px;
-      position: relative;
-      aspect-ratio: 1.25;
-      display: grid;
-      place-items: center;
-    }
-    .gamepad-wrap::before,
-    .gamepad-wrap::after {
-      content: "";
-      position: absolute;
-      border-radius: 999px;
-      inset: 4%;
-      border: 2px solid rgba(0, 229, 255, .4);
-      box-shadow: 0 0 34px rgba(0,229,255,.22), inset 0 0 28px rgba(191,73,255,.15);
-      animation: orbit 9s linear infinite;
-    }
-    .gamepad-wrap::after { inset: 17%; border-color: rgba(191,73,255,.42); animation-direction: reverse; animation-duration: 12s; }
-    @keyframes orbit { to { transform: rotate(360deg); } }
-    .gamepad-svg { width: 86%; filter: drop-shadow(0 0 18px rgba(0,229,255,.92)) drop-shadow(0 0 30px rgba(191,73,255,.54)); z-index: 1; }
-    .subtitle {
-      color: var(--cyan);
-      font-weight: 650;
-      text-align: center;
-      margin: 12px 0 32px;
-      font-size: 19px;
-      text-shadow: 0 0 14px rgba(0,229,255,.55);
-      letter-spacing: .04em;
-    }
-    .subtitle::before,
-    .subtitle::after { content: "////"; margin: 0 12px; color: rgba(0,229,255,.75); letter-spacing: -2px; }
-
-    .game-list { display: grid; gap: 18px; margin-top: 4px; }
-    .cyber-card {
-      min-height: 126px;
-      display: grid;
-      grid-template-columns: 136px 1fr 34px;
-      align-items: center;
-      padding: 18px 20px;
-      color: var(--text);
-      background:
-        linear-gradient(180deg, rgba(5, 12, 40, .45), rgba(6, 7, 24, .82)) padding-box,
-        linear-gradient(135deg, rgba(0,229,255,.98), rgba(38, 93, 255,.4) 55%, rgba(191,73,255,.98)) border-box;
-      box-shadow: 0 0 18px rgba(0,229,255,.45), inset 0 0 34px rgba(0,229,255,.08);
-      transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
-    }
-    .cyber-card:active { transform: scale(.985); filter: brightness(1.18); }
-    .cyber-card.guess-card {
-      background:
-        linear-gradient(180deg, rgba(24, 5, 47, .32), rgba(7, 7, 26, .86)) padding-box,
-        linear-gradient(135deg, rgba(0,229,255,.9), rgba(191,73,255,.98), rgba(255,79,183,.76)) border-box;
-      box-shadow: 0 0 18px rgba(191,73,255,.42), inset 0 0 34px rgba(191,73,255,.08);
-    }
-    .card-title { display: block; font-size: 27px; font-weight: 840; margin-bottom: 8px; text-shadow: 0 0 16px rgba(255,255,255,.38); }
-    .card-desc { display: block; color: #b9c8ea; font-size: 14px; line-height: 1.45; }
-    .card-arrow { font-size: 42px; color: var(--cyan); text-shadow: 0 0 16px rgba(0,229,255,.8); }
-    .card-visual { height: 90px; display: grid; place-items: center; }
-    .ship-svg { width: 112px; filter: drop-shadow(0 0 12px rgba(0,229,255,.95)); }
-    .number-badges { display: flex; gap: 5px; align-items: center; justify-content: center; }
-    .number-badges span {
-      width: 29px; height: 42px; display: grid; place-items: center; border-radius: 7px; color: #10eaff; font-size: 27px; font-weight: 850;
-      border: 1px solid rgba(0,229,255,.8); box-shadow: 0 0 10px rgba(0,229,255,.55), inset 0 0 12px rgba(0,229,255,.08);
-    }
-    .number-badges span:nth-child(3), .number-badges span:nth-child(4) { color: #c35cff; border-color: rgba(195,92,255,.88); box-shadow: 0 0 10px rgba(195,92,255,.55), inset 0 0 12px rgba(195,92,255,.08); }
-
-    .rules {
-      padding: 18px 18px;
-      display: grid;
-      grid-template-columns: 76px 1fr;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-    .rules h2 { margin: 0 0 8px; color: var(--cyan); font-size: 18px; text-shadow: var(--shadowCyan); }
-    .rules p { margin: 4px 0; color: #d6e2ff; font-size: 15px; line-height: 1.35; }
-    .target-icon { width: 58px; height: 58px; color: var(--cyan); filter: drop-shadow(0 0 12px rgba(0,229,255,.85)); }
-
-    .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 22px 20px; }
-    .slot {
-      aspect-ratio: 1;
-      border-radius: 13px;
-      border: 1px solid rgba(116, 184, 255, .88);
-      background: linear-gradient(180deg, rgba(15, 28, 70, .54), rgba(2, 6, 22, .78));
-      box-shadow: 0 0 16px rgba(73, 165, 255, .6), inset 0 0 18px rgba(0,229,255,.07);
-      display: grid; place-items: center;
-      font-size: clamp(32px, 10vw, 50px);
-      font-weight: 800;
-      color: #dfeaff;
-      text-shadow: 0 0 16px rgba(91,180,255,.85);
-      transition: transform .16s ease, border-color .16s ease;
-    }
-    .slot.filled { transform: translateY(-2px); border-color: var(--cyan); }
-
-    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; margin-bottom: 12px; }
-    .key,
-    .action-btn,
-    .primary-btn {
-      min-height: 62px;
-      border-radius: 11px;
-      color: #eaf2ff;
-      background:
-        linear-gradient(180deg, rgba(13, 27, 72, .78), rgba(4, 9, 30, .92)) padding-box,
-        linear-gradient(135deg, rgba(0,229,255,.78), rgba(63,124,255,.34), rgba(191,73,255,.58)) border-box;
-      border: 1px solid transparent;
-      box-shadow: 0 0 12px rgba(0, 119, 255, .26), inset 0 0 18px rgba(0, 229, 255, .04);
-      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
-      user-select: none;
-    }
-    .key { font-size: 35px; font-weight: 760; text-shadow: 0 0 15px rgba(150,199,255,.7); }
-    .key:disabled { opacity: .35; filter: saturate(.45); }
-    .key:not(:disabled):active,
-    .action-btn:not(:disabled):active,
-    .primary-btn:not(:disabled):active { transform: scale(.96); filter: brightness(1.25); }
-    .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; margin-bottom: 16px; }
-    .action-btn { min-height: 58px; font-size: 20px; font-weight: 760; display: flex; align-items: center; justify-content: center; gap: 7px; }
-    .action-btn.reset { color: var(--cyan); border-color: rgba(0,229,255,.88); box-shadow: var(--shadowCyan); }
-    .action-btn.delete { color: #dc9dff; border-color: rgba(191,73,255,.8); box-shadow: var(--shadowPurple); }
-    .action-btn.submit { color: var(--pink); border-color: rgba(255,79,183,.88); box-shadow: 0 0 14px rgba(255,79,183,.42); }
-    .action-btn.submit.ready { color: #fff; border-color: rgba(0,229,255,.95); box-shadow: 0 0 18px rgba(0,229,255,.55), 0 0 24px rgba(255,79,183,.22); }
-    .action-btn:disabled { opacity: .48; color: #8c99b7; box-shadow: none; }
-    .action-btn svg, .primary-btn svg { width: 22px; height: 22px; }
-
-    .history { padding: 14px 16px; }
-    .history-title { color: var(--cyan); font-weight: 820; margin-bottom: 8px; font-size: 18px; text-shadow: var(--shadowCyan); }
-    .history-list { display: grid; gap: 0; }
-    .history-row {
-      display: grid; grid-template-columns: 16px 1fr auto;
-      gap: 9px;
-      align-items: center;
-      min-height: 38px;
-      border-top: 1px solid rgba(113, 142, 210, .18);
-      color: #e8eeff;
-      font-size: 19px;
-      letter-spacing: .34em;
-      padding: 8px 0;
-    }
-    .history-row:first-child { border-top: 0; }
-    .dot { width: 9px; height: 9px; background: #308cff; border-radius: 50%; box-shadow: 0 0 12px rgba(48,140,255,.9); }
-    .history-result { color: #16d8ff; font-weight: 800; letter-spacing: 0; text-shadow: 0 0 12px rgba(0,229,255,.6); }
-    .empty { color: #7888b5; text-align: center; padding: 14px; font-size: 15px; }
-
-    .battle-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 16px 0; margin-bottom: 12px; }
-    .stat {
-      text-align: center;
-      border-left: 1px solid rgba(92, 139, 220, .22);
-      min-height: 74px;
-      display: grid;
-      place-items: center;
-      gap: 3px;
-    }
-    .stat:first-child { border-left: 0; }
-    .stat-top { display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 31px; font-weight: 800; }
-    .stat-label { color: #c6d1f3; font-size: 15px; }
-    .stat svg { width: 30px; height: 30px; filter: drop-shadow(0 0 10px currentColor); }
-    .stat.shots svg, .stat.shots .stat-top { color: var(--cyan); }
-    .stat.hits svg, .stat.hits .stat-top { color: var(--red); }
-    .stat.ships svg, .stat.ships .stat-top { color: var(--gold); }
-
-    .info-lines { display: grid; gap: 10px; margin-bottom: 16px; }
-    .info-line {
-      min-height: 45px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: rgba(8, 18, 50, .66);
-      border: 1px solid rgba(86, 122, 210, .28);
-      color: #d8e2ff;
-      box-shadow: inset 0 0 18px rgba(0, 229, 255, .025);
-      font-size: 15px;
-    }
-    .info-line svg { width: 24px; height: 24px; color: #9fa7ff; flex: 0 0 auto; filter: drop-shadow(0 0 8px rgba(159,167,255,.52)); }
-
-    .board-wrap { margin: 0 auto 18px; width: 100%; overflow: visible; }
-    .board-scroll { overflow-x: auto; padding: 4px 0 6px; scrollbar-width: none; }
-    .board-scroll::-webkit-scrollbar { display: none; }
-    .board-frame {
-      --cell: clamp(27px, 8vw, 38px);
-      --gap: 3px;
-      width: max-content;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 26px repeat(10, var(--cell));
-      grid-template-rows: 25px repeat(10, var(--cell));
-      gap: var(--gap);
-      align-items: center;
-    }
-    .axis { color: #dbe6ff; font-size: 15px; text-align: center; text-shadow: 0 0 10px rgba(255,255,255,.2); }
-    .cell {
-      width: var(--cell);
-      height: var(--cell);
-      border-radius: 6px;
-      position: relative;
-      background: radial-gradient(circle at 50% 50%, rgba(0,119,255,.26), rgba(5,10,34,.8) 54%, rgba(4,7,25,.92));
-      border: 1px solid rgba(0, 154, 255, .82);
-      box-shadow: 0 0 8px rgba(0,132,255,.52), inset 0 0 12px rgba(0,229,255,.055);
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-    }
-    .cell::after {
-      content: "";
-      position: absolute;
-      left: 50%; top: 50%;
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: rgba(31, 132, 255, .75);
-      box-shadow: 0 0 8px rgba(31,132,255,.75);
-      transform: translate(-50%, -50%);
-    }
-    .cell:not(.used):active { transform: scale(.88); box-shadow: 0 0 18px rgba(0,229,255,.85), inset 0 0 18px rgba(0,229,255,.22); }
-    .cell.miss { border-color: rgba(0,229,255,.95); background: radial-gradient(circle, rgba(0,229,255,.22), rgba(7,13,42,.85)); }
-    .cell.miss::after { content: "~"; width: auto; height: auto; background: none; color: var(--cyan); font-size: 18px; font-weight: 800; text-shadow: var(--shadowCyan); box-shadow: none; transform: translate(-50%, -55%); }
-    .cell.hit { border-color: rgba(255,79,114,.95); background: radial-gradient(circle, rgba(255,79,114,.28), rgba(18,8,34,.84)); box-shadow: 0 0 12px rgba(255,79,114,.6), inset 0 0 14px rgba(255,79,114,.14); }
-    .cell.hit::after { content: "×"; width: auto; height: auto; background: none; color: var(--red); font-size: 28px; font-weight: 800; text-shadow: 0 0 14px rgba(255,79,114,.9); box-shadow: none; transform: translate(-50%, -52%); }
-    .cell.sunk { border-color: rgba(255,212,71,.98); background: radial-gradient(circle at 50% 50%, rgba(255,212,71,.38), rgba(40,21,4,.82)); box-shadow: 0 0 14px rgba(255,212,71,.66), inset 0 0 15px rgba(255,212,71,.18); }
-    .cell.sunk::after { content: "●"; width: auto; height: auto; background: none; color: var(--gold); font-size: 18px; text-shadow: 0 0 12px rgba(255,212,71,.95); box-shadow: none; }
-
-    .primary-btn {
-      width: 100%;
-      min-height: 66px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-size: 22px;
-      font-weight: 820;
-      color: var(--cyan);
-      border-radius: 13px;
-      background:
-        linear-gradient(180deg, rgba(7, 14, 44, .88), rgba(6, 7, 24, .95)) padding-box,
-        linear-gradient(100deg, rgba(0,229,255,.95), rgba(64,124,255,.4), rgba(191,73,255,.92), rgba(255,79,183,.86)) border-box;
-      box-shadow: 0 0 22px rgba(0,229,255,.55), 0 0 32px rgba(191,73,255,.28), inset 0 0 28px rgba(0,229,255,.05);
-      text-shadow: var(--shadowCyan);
-    }
-    .primary-btn svg { filter: drop-shadow(0 0 10px currentColor); }
-
-    .message {
-      margin-bottom: 14px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(8, 18, 50, .66);
-      border: 1px solid rgba(0,229,255,.24);
-      color: #d9e6ff;
-      min-height: 46px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .message.success { border-color: rgba(255,212,71,.55); color: #fff5c0; box-shadow: 0 0 16px rgba(255,212,71,.16); }
-    .message.warn { border-color: rgba(255,79,114,.45); color: #ffd3dd; }
-
-    .toast {
-      position: fixed;
-      z-index: 20;
-      left: 50%;
-      bottom: calc(24px + var(--safeBottom));
-      transform: translateX(-50%) translateY(18px);
-      width: min(calc(100% - 34px), 430px);
-      padding: 13px 16px;
-      color: #fff;
-      opacity: 0;
-      pointer-events: none;
-      transition: .25s ease;
-      text-align: center;
-      font-weight: 650;
-      box-shadow: 0 0 24px rgba(0,229,255,.25);
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    .modal {
-      position: fixed; inset: 0; z-index: 30; display: none; place-items: center; padding: 22px;
-      background: rgba(2, 3, 10, .72); backdrop-filter: blur(8px);
-    }
-    .modal.show { display: grid; animation: screenIn .2s ease both; }
-    .modal-card { width: min(100%, 380px); padding: 24px; text-align: center; }
-    .modal-card h3 { margin: 0 0 10px; font-size: 28px; color: var(--gold); text-shadow: 0 0 18px rgba(255,212,71,.6); }
-    .modal-card p { color: #dbe6ff; margin: 6px 0 18px; line-height: 1.5; }
-
-    .shake { animation: shake .35s ease both; }
-    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
-    .pulse { animation: pulse .45s ease both; }
-    @keyframes pulse { 0%{transform:scale(1)} 42%{transform:scale(1.08); filter:brightness(1.3)} 100%{transform:scale(1)} }
-
-    @media (max-width: 380px) {
-      .screen { padding-inline: 12px; }
-      .cyber-card { grid-template-columns: 112px 1fr 28px; padding: 14px 14px; min-height: 110px; }
-      .card-title { font-size: 23px; }
-      .ship-svg { width: 98px; }
-      .slots { margin-inline: 12px; gap: 9px; }
-      .key, .action-btn { min-height: 54px; }
-      .key { font-size: 31px; }
-      .rules { grid-template-columns: 58px 1fr; padding: 14px; }
-      .target-icon { width: 46px; height: 46px; }
-      .board-frame { --cell: 26px; --gap: 2px; grid-template-columns: 22px repeat(10, var(--cell)); }
-      .axis { font-size: 13px; }
-    }
-    @media (min-width: 720px) {
-      .app-shell { margin-block: 18px; min-height: calc(100svh - 36px); border-radius: 30px; }
-      .screen { min-height: calc(100svh - 36px); }
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--text);min-height:100vh}
+    body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 15% 10%,rgba(251,113,133,.28),transparent 32%),radial-gradient(circle at 85% 20%,rgba(59,130,246,.18),transparent 30%),radial-gradient(circle at 70% 90%,rgba(251,191,36,.16),transparent 35%);pointer-events:none}
+    .auth-screen{position:relative;min-height:100vh;display:grid;place-items:center;padding:22px}
+    .login-card{width:min(460px,100%);background:var(--card);border:1px solid var(--border);border-radius:32px;box-shadow:var(--shadow);padding:32px;backdrop-filter:blur(14px)}
+    .login-card h1{margin:0 0 8px;font-size:34px;letter-spacing:-.04em}.login-card p{margin:0 0 24px;color:var(--muted);line-height:1.7}.login-logo{width:64px;height:64px;border-radius:22px;background:#fff1f2;color:var(--accent);display:grid;place-items:center;font-size:30px;margin-bottom:18px}.login-tip{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.7}
+    .app{position:relative;max-width:1080px;margin:auto;padding:30px 18px 54px;display:none}
+    header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:22px}
+    .brand h1{margin:0;font-size:clamp(28px,5vw,44px);letter-spacing:-.04em}
+    .header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.user-email{font-size:13px;color:var(--muted);background:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:999px;padding:9px 12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;backdrop-filter:blur(14px)}
+    .view{display:none}.view.active{display:block}
+    h2{margin:0 0 6px;font-size:28px;letter-spacing:-.03em}.muted{color:var(--muted);font-size:14px}
+    .home-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:20px}.home-hero h2{font-size:34px}.home-hero p{margin:8px 0 0;color:var(--muted)}
+    .home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .menu-card{border:1px solid rgba(255,255,255,.95);border-radius:24px;background:rgba(255,255,255,.9);padding:22px;cursor:pointer;transition:.18s;text-align:left;min-height:174px;box-shadow:0 12px 28px rgba(15,23,42,.06);display:grid;grid-template-columns:52px 1fr;align-items:center;column-gap:14px;row-gap:12px;color:var(--text);appearance:none;-webkit-appearance:none}
+    .menu-card:hover{transform:translateY(-4px);box-shadow:0 18px 36px rgba(225,29,72,.15)}
+    .menu-icon{grid-column:1;grid-row:1;width:52px;height:52px;display:grid;place-items:center;background:#fff1f2;color:var(--accent);border-radius:18px;margin-bottom:0}.menu-icon svg{width:30px;height:30px;display:block}.menu-card h2{grid-column:2;grid-row:1;margin:0;font-size:21px;color:#0ea5e9}.menu-card p{grid-column:1 / -1;margin:0;color:var(--muted);font-size:14px;line-height:1.6}
+    .soft-panel{margin-top:20px;background:rgba(255,255,255,.66);border:1px solid rgba(255,255,255,.9);border-radius:26px;padding:18px}.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.stat{background:#fff;border:1px solid #ffe4e6;border-radius:20px;padding:16px;color:var(--muted)}.stat b{display:block;font-size:26px;color:var(--accent);margin-top:8px}
+    .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+    .btn{border:0;border-radius:16px;background:var(--primary);color:#fff;padding:12px 16px;font-weight:900;cursor:pointer;font-size:15px;box-shadow:0 10px 22px rgba(225,29,72,.18)}.btn:hover{background:var(--primary2)}.btn:disabled{opacity:.55;cursor:not-allowed}
+    .btn.secondary{background:#fff;color:#9f1239;border:1px solid #fecdd3;box-shadow:none}.btn.danger{background:var(--danger)}.btn.ghost{background:transparent;color:var(--accent);padding:8px;box-shadow:none}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field label{display:block;font-weight:900;margin-bottom:8px}.field input{width:100%;border:1px solid #fecdd3;border-radius:16px;padding:14px 15px;font-size:16px;background:#fff}.field input:focus{outline:3px solid rgba(251,113,133,.22);border-color:#fb7185}.account-wrap{display:flex;align-items:center;border:1px solid #fecdd3;border-radius:16px;background:#fff;overflow:hidden}.account-wrap:focus-within{outline:3px solid rgba(251,113,133,.22);border-color:#fb7185}.account-wrap input{border:0;border-radius:0;outline:0;min-width:0}.account-wrap input:focus{outline:0;border:0}.account-suffix{padding:0 14px 0 4px;color:#9ca3af;font-weight:400;white-space:nowrap;background:#fff}
+    .login-card .field{margin-bottom:14px}.login-card .btn{width:100%;margin-top:6px;padding:14px 16px}
+    .employee-list{display:grid;gap:12px}.employee-card{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:16px;border:1px solid #ffe4e6;border-radius:22px;background:#fff7f8}.employee-card.clickable{cursor:pointer;transition:.18s}.employee-card.clickable:hover{transform:translateY(-2px);background:#fff;box-shadow:0 12px 26px rgba(225,29,72,.12)}.employee-main strong{font-size:18px}.pill{display:inline-block;background:#fff;color:#e11d48;border:1px solid #fecdd3;border-radius:999px;padding:8px 11px;font-weight:900}
+    .detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}.info-box{background:#fff;border:1px solid #ffe4e6;border-radius:22px;padding:18px}.info-box span{display:block;color:var(--muted);font-size:14px;margin-bottom:8px}.info-box strong{font-size:20px;color:#9f1239}
+    .empty{padding:28px;border:1px dashed #fda4af;border-radius:20px;text-align:center;color:var(--muted);background:#fff}.notice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:18px;padding:14px;margin:12px 0}.status{font-size:14px;color:var(--muted);margin-top:10px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.38);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal-backdrop.show{display:flex}.modal-card{width:min(420px,100%);background:#fff;border:1px solid #ffe4e6;border-radius:28px;padding:24px;box-shadow:0 28px 60px rgba(15,23,42,.2)}.modal-card h3{margin:0 0 6px;font-size:28px}.modal-card p{margin:0 0 18px;color:var(--muted);line-height:1.7}.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}.subtle-note{margin-top:10px;color:var(--muted);font-size:14px}
+    @media(max-width:760px){.app{padding:22px 14px 40px}header{align-items:center;flex-direction:row;justify-content:space-between;gap:10px}.brand{min-width:0}.brand h1{font-size:30px;line-height:1.15}.header-actions{justify-content:flex-end;flex-wrap:nowrap;margin-left:auto}.header-actions .btn{white-space:nowrap;padding:12px 16px}.home-hero{align-items:flex-start;flex-direction:column}.home-grid,.form-grid,.detail-grid,.stat-grid{grid-template-columns:1fr}.menu-card{grid-template-columns:64px 1fr;column-gap:16px;min-height:auto;padding:20px}.menu-icon{width:64px;height:64px}.menu-icon svg{width:36px;height:36px}.menu-card h2{font-size:24px;color:#0ea5e9}.employee-card{grid-template-columns:1fr}.card{padding:20px}.home-hero h2{font-size:30px}.login-card{padding:26px 20px}.login-card h1{font-size:30px}.modal-card{padding:22px 18px}.modal-card h3{font-size:24px}.modal-actions .btn{flex:1}}@media(max-width:390px){.brand h1{font-size:28px}.header-actions .btn{padding:11px 14px}.menu-card{grid-template-columns:58px 1fr;padding:18px}.menu-icon{width:58px;height:58px}.menu-icon svg{width:34px;height:34px}.menu-card h2{font-size:22px;color:#0ea5e9}}
   </style>
 </head>
 <body>
-  <div class="app-shell" id="appShell">
-    <section class="screen active" id="homeScreen" aria-label="首頁">
-      <div class="status-bar"><span data-clock>20:21</span></div>
-      <main class="hero">
-        <div class="gamepad-wrap" aria-hidden="true">
-          <svg class="gamepad-svg" viewBox="0 0 360 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M88 105h184c42 0 68 29 75 82 5 39-20 65-53 46l-49-31H115l-49 31c-33 19-58-7-53-46 7-53 33-82 75-82Z" fill="rgba(5,8,25,.72)" stroke="url(#g1)" stroke-width="10"/>
-            <path d="M79 105c11-37 34-55 70-55h62c36 0 59 18 70 55" stroke="url(#g2)" stroke-width="10" stroke-linecap="round"/>
-            <path d="M91 154h52M117 128v52" stroke="#FFD447" stroke-width="13" stroke-linecap="round"/>
-            <path d="M162 116h29M213 116h29" stroke="#BF49FF" stroke-width="8" stroke-linecap="round"/>
-            <circle cx="251" cy="142" r="12" fill="#4DFFB7"/><circle cx="284" cy="157" r="12" fill="#FF4F88"/><circle cx="265" cy="180" r="12" fill="#00E5FF"/><circle cx="289" cy="122" r="12" fill="#B66BFF"/>
-            <defs><linearGradient id="g1" x1="0" y1="80" x2="360" y2="230"><stop stop-color="#00E5FF"/><stop offset=".52" stop-color="#3F7CFF"/><stop offset="1" stop-color="#BF49FF"/></linearGradient><linearGradient id="g2" x1="60" y1="50" x2="300" y2="105"><stop stop-color="#00E5FF"/><stop offset="1" stop-color="#BF49FF"/></linearGradient></defs>
-          </svg>
+  <section id="authView" class="auth-screen">
+    <div class="login-card">
+      <h1>員工特休計算系統</h1>
+      <p>請使用管理員帳號登入後查看、新增、編輯或刪除員工資料。</p>
+      <div id="authConfigNotice" class="notice" style="display:none">尚未設定 Supabase URL 與 anon key，請先打開 index.html 修改設定。</div>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginAccount">帳號</label>
+          <div class="account-wrap">
+            <input id="loginAccount" type="text" autocomplete="username" required placeholder="admin" inputmode="email">
+            <span class="account-suffix">@leave.calculator</span>
+          </div>
         </div>
-        <h1 class="title">小遊戲</h1>
-        <div class="subtitle">選擇你想玩的遊戲</div>
-        <div class="game-list">
-          <button class="cyber-card cut" type="button" data-go="battle">
-            <span class="card-visual"><svg class="ship-svg" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 67h164l-22 20H39L18 67Z" stroke="#00E5FF" stroke-width="6"/><path d="M58 67V48h22V33h18v15h28v19" stroke="#00E5FF" stroke-width="6"/><path d="M42 80h116" stroke="#00E5FF" stroke-width="4" stroke-dasharray="7 10"/><path d="M97 33V17" stroke="#00E5FF" stroke-width="5"/><path d="M87 48h13M110 48h13" stroke="#00E5FF" stroke-width="5" stroke-linecap="round"/></svg></span>
-            <span><span class="card-title">海戰棋</span><span class="card-desc">經典策略，擊沉所有船隻</span></span>
-            <span class="card-arrow">›</span>
-          </button>
-          <button class="cyber-card guess-card cut" type="button" data-go="guess">
-            <span class="card-visual"><span class="number-badges"><span>1</span><span>2</span><span>3</span><span>4</span></span></span>
-            <span><span class="card-title">猜數字 1A2B</span><span class="card-desc">邏輯推理，挑戰你的腦力</span></span>
-            <span class="card-arrow">›</span>
-          </button>
+        <div class="field">
+          <label for="loginPassword">密碼</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="請輸入密碼">
         </div>
-      </main>
+        <button class="btn" id="loginButton" type="submit">登入</button>
+      </form>
+      <div class="status" id="loginStatus"></div>
+    </div>
+  </section>
+
+  <div id="appShell" class="app">
+    <header>
+      <div class="brand"><h1>員工特休計算系統</h1></div>
+      <div class="header-actions">
+        <button class="btn secondary" onclick="logout()">登出</button>
+      </div>
+    </header>
+
+    <section id="homeView" class="view active card">
+      <div class="home-grid">
+        <button class="menu-card" onclick="showView('listView')"><div class="menu-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="20" r="9.5" fill="currentColor" opacity="0.92"/><rect x="16" y="34" width="32" height="18" rx="9" fill="currentColor" opacity="0.92"/></svg></div><h2>查看員工資料</h2><p>查看特休、年資與特休期限，也可以編輯員工資料。</p></button>
+        <button class="menu-card" onclick="showAddView()"><div class="menu-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="27" cy="20" r="9.5" fill="currentColor" opacity="0.92"/><rect x="11" y="34" width="32" height="18" rx="9" fill="currentColor" opacity="0.92"/><circle cx="47" cy="46" r="11" fill="white" stroke="currentColor" stroke-width="3"/><path d="M47 40.5V51.5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M41.5 46H52.5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></div><h2>新增員工</h2><p>新增員工姓名與入職日期。</p></button>
+        <button class="menu-card" onclick="showView('deleteView')"><div class="menu-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 18H42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M26 18V15C26 12.791 27.791 11 30 11H34C36.209 11 38 12.791 38 15V18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M18 21H46L43.733 48.206C43.556 50.33 41.78 52 39.649 52H24.351C22.22 52 20.444 50.33 20.267 48.206L18 21Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M27 28V43" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M37 28V43" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></div><h2>刪除員工</h2><p>刪除離職或不需要保留的員工資料。</p></button>
+      </div>
     </section>
 
-    <section class="screen" id="guessScreen" aria-label="猜數字 1A2B">
-      <div class="status-bar"><span data-clock>20:21</span></div>
-      <header class="top-line"><h1 class="page-title">猜數字 1A2B</h1><button class="home-btn" type="button" data-go="home" aria-label="回首頁"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5H15v-6h-6v6H3.5a.5.5 0 0 1-.5-.5v-9.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button></header>
-      <div class="cyber-panel rules cut">
-        <svg class="target-icon" viewBox="0 0 64 64" fill="none"><path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="20" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="7" stroke="currentColor" stroke-width="3"/></svg>
-        <div><h2>遊戲規則</h2><p>猜一個 4 位數字，數字不重複</p><p>A：數字和位置都正確</p><p>B：數字正確但位置錯誤</p></div>
-      </div>
-      <div class="slots" id="guessSlots"><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div></div>
-      <div class="keypad" id="keypad"></div>
-      <div class="actions">
-        <button class="action-btn reset" id="guessClear" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7V3h-5.7l2 2A10 10 0 1 0 22 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>重設</button>
-        <button class="action-btn delete" id="guessDelete" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M21 6H8l-5 6 5 6h13V6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m11 9 6 6M17 9l-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>刪除</button>
-        <button class="action-btn submit" id="guessSubmit" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M22 2 11 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m22 2-7 20-4-9-9-4 20-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>送出</button>
-      </div>
-      <section class="history"><div class="history-title">猜測紀錄</div><div class="history-list" id="guessHistory"><div class="empty">尚未開始猜測</div></div></section>
+    <section id="listView" class="view card">
+      <div class="toolbar"><div><h2>查看員工資料</h2><p class="muted">點選員工即可查看完整特休資訊，也可直接編輯員工資料。</p></div><div class="actions"><button class="btn secondary" onclick="showView('homeView')">回首頁</button><button class="btn" onclick="showAddView()">新增員工</button></div></div>
+      <div id="employeeList" class="employee-list"></div>
+      <div class="status" id="listStatus"></div>
     </section>
 
-    <section class="screen" id="battleScreen" aria-label="海戰棋">
-      <div class="status-bar"><span data-clock>20:21</span></div>
-      <header class="top-line"><h1 class="page-title">海戰棋</h1><button class="home-btn" type="button" data-go="home" aria-label="回首頁"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5H15v-6h-6v6H3.5a.5.5 0 0 1-.5-.5v-9.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button></header>
-      <section class="cyber-panel battle-stats cut">
-        <div class="stat shots"><div class="stat-top"><svg viewBox="0 0 64 64" fill="none"><path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="20" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="7" stroke="currentColor" stroke-width="3"/></svg><span id="shotCount">0</span></div><div class="stat-label">射擊</div></div>
-        <div class="stat hits"><div class="stat-top"><svg viewBox="0 0 64 64" fill="none"><path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="20" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="7" stroke="currentColor" stroke-width="3"/></svg><span id="hitCount">0</span></div><div class="stat-label">命中</div></div>
-        <div class="stat ships"><div class="stat-top"><svg viewBox="0 0 64 64" fill="none"><path d="M8 40h48L49 52H16L8 40Z" stroke="currentColor" stroke-width="3"/><path d="M22 40V29h9v-8h8v8h10v11" stroke="currentColor" stroke-width="3"/><path d="M32 21V11" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><span id="shipCount">5</span></div><div class="stat-label">剩餘船</div></div>
-      </section>
-      <div class="info-lines">
-        <div class="info-line"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 10v7M12 7h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>船隻大小會在該艘船完整命中後公布。</div>
-        <div class="info-line"><svg viewBox="0 0 64 64" fill="none"><path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="20" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="7" stroke="currentColor" stroke-width="3"/></svg>點擊格子開始猜測。</div>
-      </div>
-      <div class="message" id="battleMessage">找出 1、2、3、4、5 格船各一艘。</div>
-      <div class="board-wrap"><div class="board-scroll"><div class="board-frame" id="battleBoard"></div></div></div>
-      <button class="primary-btn" id="battleReset" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7V3h-5.7l2 2A10 10 0 1 0 22 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>重新開局</button>
+    <section id="detailView" class="view card"><div id="employeeDetail"></div></section>
+
+    <section id="formView" class="view card">
+      <div class="toolbar"><div><h2 id="formTitle">新增員工</h2><p class="muted">輸入姓名與入職日期後儲存。</p></div><button class="btn secondary" onclick="showView('homeView')">回首頁</button></div>
+      <form id="employeeForm">
+        <input type="hidden" id="employeeId">
+        <div class="form-grid">
+          <div class="field"><label for="employeeName">員工姓名</label><input id="employeeName" required placeholder="例：王小明"></div>
+          <div class="field"><label for="startDate">入職日期</label><input id="startDate" type="date" required></div>
+        </div>
+        <div class="actions"><button class="btn" type="submit">儲存</button><button class="btn secondary" type="button" onclick="showView('listView')">取消</button></div>
+      </form>
+      <div class="status" id="formStatus"></div>
+    </section>
+
+    <section id="deleteView" class="view card">
+      <div class="toolbar"><div><h2>刪除員工</h2><p class="muted">刪除後無法從網頁還原。</p></div><button class="btn secondary" onclick="showView('homeView')">回首頁</button></div>
+      <div id="deleteList" class="employee-list"></div>
+      <div class="status" id="deleteStatus"></div>
     </section>
   </div>
 
-  <div class="toast" id="toast"></div>
-  <div class="modal" id="winModal" role="dialog" aria-modal="true">
-    <div class="modal-card cut">
-      <h3 id="modalTitle">恭喜完成！</h3>
-      <p id="modalText">你完成了遊戲。</p>
-      <button class="primary-btn" type="button" id="modalClose">繼續遊玩</button>
+  <div id="leaveModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h3>使用特休</h3>
+      <p id="leaveModalText">請輸入本次使用的特休天數。</p>
+      <form id="leaveForm">
+        <div class="field">
+          <label for="leaveDaysInput">使用天數</label>
+          <input id="leaveDaysInput" type="number" min="0.5" step="0.5" required placeholder="例如：1 或 0.5">
+        </div>
+        <div class="subtle-note" id="leaveRemainingNote"></div>
+        <div class="status" id="leaveStatus"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" onclick="closeLeaveModal()">取消</button>
+          <button type="submit" class="btn" id="leaveSubmitButton">送出</button>
+        </div>
+      </form>
     </div>
   </div>
 
   <script>
-    const $ = (q, root = document) => root.querySelector(q);
-    const $$ = (q, root = document) => [...root.querySelectorAll(q)];
+    const SUPABASE_URL = 'https://jbrbaphximdnqwyoatvp.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_O4HLjBLFa5y5IDA9OMdV8g_6Ujf49RQ';
+    const TABLE_NAME = 'employees';
+    const LOGIN_EMAIL_DOMAIN = '@leave.calculator';
+    const supabaseReady = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.length > 30;
+    const db = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+    let currentDetailEmployeeId = '';
 
-    const state = {
-      page: 'home',
-      guessSecret: [],
-      guessInput: [],
-      guessHistory: [],
-      battleShips: [],
-      battleShots: 0,
-      battleHits: 0,
-      battleOver: false
-    };
-
-    const icons = {
-      hit: '命中',
-      miss: '擊空'
-    };
-
-    function showPage(page) {
-      state.page = page;
-      $$('.screen').forEach(s => s.classList.remove('active'));
-      const screen = page === 'home' ? '#homeScreen' : page === 'guess' ? '#guessScreen' : '#battleScreen';
-      $(screen).classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    function getToday(){const now=new Date();return new Date(now.getFullYear(),now.getMonth(),now.getDate())}
+    function parseDate(str){const [y,m,d]=str.split('-').map(Number);return new Date(y,m-1,d)}
+    function formatDate(date){const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
+    function addMonths(date,months){const d=new Date(date);const day=d.getDate();d.setMonth(d.getMonth()+months);if(d.getDate()<day)d.setDate(0);return d}
+    function addYears(date,years){return addMonths(date,years*12)}
+    function diffYMD(start,end){let y=end.getFullYear()-start.getFullYear();let m=end.getMonth()-start.getMonth();let d=end.getDate()-start.getDate();if(d<0){m--;const prev=new Date(end.getFullYear(),end.getMonth(),0);d+=prev.getDate()}if(m<0){y--;m+=12}return{years:y,months:m,days:d}}
+    function getCompletedYears(start,today){let years=today.getFullYear()-start.getFullYear();if(addYears(start,years)>today)years--;return Math.max(0,years)}
+    function getLeaveDays(start,today){
+      if(today<addMonths(start,6))return 0;
+      if(today<addYears(start,1))return 3;
+      if(today<addYears(start,2))return 7;
+      if(today<addYears(start,3))return 10;
+      if(today<addYears(start,5))return 14;
+      if(today<addYears(start,10))return 15;
+      const years=getCompletedYears(start,today);
+      return Math.min(15+(years-9),30);
     }
+    function getCurrentPeriod(start,today){const half=addMonths(start,6);if(today<half)return{periodStart:null,periodEnd:null};if(today<addYears(start,1))return{periodStart:half,periodEnd:new Date(addYears(start,1).getTime()-86400000)};let years=today.getFullYear()-start.getFullYear();let pStart=addYears(start,years);if(pStart>today){years--;pStart=addYears(start,years)}return{periodStart:pStart,periodEnd:new Date(addYears(pStart,1).getTime()-86400000)}}
+    function getNextIncrease(start,today){const checkpoints=[6,12,24,36,60,120,132,144,156,168,180,192,204,216,228,240,252,264,276,288,300,312,324,336,348,360];for(const m of checkpoints){const date=addMonths(start,m);if(date>today)return{date,days:getLeaveDays(start,date)}}return null}
+    function escapeHtml(text){return String(text).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+    function normalizeUsedLeaveDays(value){const n=Number(value||0);return Number.isFinite(n)&&n>0?n:0}
+    function getRemainingLeaveDays(total,used){return Math.max(0, +(total - normalizeUsedLeaveDays(used)).toFixed(2))}
+    function formatLeaveDays(days){const rounded = Number(days);return Number.isInteger(rounded)? `${rounded}` : `${rounded}`.replace(/\.0+$/,'').replace(/(\.\d*[1-9])0+$/,'$1')}
 
-    function toast(message) {
-      const el = $('#toast');
-      el.textContent = message;
-      el.classList.add('show');
-      clearTimeout(toast._t);
-      toast._t = setTimeout(() => el.classList.remove('show'), 1600);
-    }
+    async function loadEmployees(){if(!db) return [];const {data,error}=await db.from(TABLE_NAME).select('*').order('start_date',{ascending:true});if(error){alert('讀取失敗：'+error.message);return []}return data.map(row=>({id:row.id,name:row.name,startDate:row.start_date,usedLeaveDays:normalizeUsedLeaveDays(row.used_leave_days)})).sort((a,b)=>parseDate(a.startDate)-parseDate(b.startDate))}
+    async function insertEmployee(employee){const {error}=await db.from(TABLE_NAME).insert({name:employee.name,start_date:employee.startDate});if(error)throw error}
+    async function updateEmployee(employee){const {error}=await db.from(TABLE_NAME).update({name:employee.name,start_date:employee.startDate,updated_at:new Date().toISOString()}).eq('id',employee.id);if(error)throw error}
+    async function updateUsedLeave(id, usedLeaveDays){const {error}=await db.from(TABLE_NAME).update({used_leave_days:usedLeaveDays,updated_at:new Date().toISOString()}).eq('id',id);if(error)throw error}
+    async function removeEmployee(id){const {error}=await db.from(TABLE_NAME).delete().eq('id',id);if(error)throw error}
 
-    function modal(title, text) {
-      $('#modalTitle').textContent = title;
-      $('#modalText').textContent = text;
-      $('#winModal').classList.add('show');
-    }
+    async function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='listView')await renderEmployeeList();if(id==='deleteView')await renderDeleteList()}
+    function showAddView(){document.getElementById('formTitle').textContent='新增員工';document.getElementById('employeeId').value='';document.getElementById('employeeName').value='';document.getElementById('startDate').value='';document.getElementById('formStatus').textContent='';showView('formView')}
+    async function showEditView(id){const employees=await loadEmployees();const employee=employees.find(e=>e.id===id);if(!employee)return;document.getElementById('formTitle').textContent='編輯員工資料';document.getElementById('employeeId').value=employee.id;document.getElementById('employeeName').value=employee.name;document.getElementById('startDate').value=employee.startDate;document.getElementById('formStatus').textContent='';showView('formView')}
 
-    function updateClock() {
-      const d = new Date();
-      const hh = String(d.getHours()).padStart(2, '0');
-      const mm = String(d.getMinutes()).padStart(2, '0');
-      $$('[data-clock]').forEach(el => el.textContent = `${hh}:${mm}`);
-    }
+    async function renderEmployeeList(){const list=document.getElementById('employeeList');const status=document.getElementById('listStatus');list.innerHTML='<div class="empty">讀取中...</div>';const employees=await loadEmployees();status.textContent=`共 ${employees.length} 位員工`;if(!employees.length){list.innerHTML='<div class="empty">目前沒有員工資料，請先新增員工。</div>';return}const today=getToday();list.innerHTML=employees.map(e=>{const start=parseDate(e.startDate);const totalLeaveDays=getLeaveDays(start,today);const leaveDays=getRemainingLeaveDays(totalLeaveDays,e.usedLeaveDays);const s=diffYMD(start,today);return `<div class="employee-card clickable" onclick="showDetail('${e.id}')"><div class="employee-main"><strong>${escapeHtml(e.name)}</strong><div class="muted">入職日期：${e.startDate}</div></div><div><span class="pill">目前特休 ${formatLeaveDays(leaveDays)} 天</span><div class="muted" style="margin-top:8px">年資：${s.years} 年 ${s.months} 個月 ${s.days} 天</div></div><div class="actions" style="margin-top:0"><button class="btn secondary" onclick="event.stopPropagation();showEditView('${e.id}')">編輯</button></div></div>`}).join('')}
+    async function showDetail(id){const employees=await loadEmployees();const e=employees.find(x=>x.id===id);if(!e)return;currentDetailEmployeeId=id;const start=parseDate(e.startDate);const today=getToday();const totalLeaveDays=getLeaveDays(start,today);const remainingLeaveDays=getRemainingLeaveDays(totalLeaveDays,e.usedLeaveDays);const s=diffYMD(start,today);const p=getCurrentPeriod(start,today);document.getElementById('employeeDetail').innerHTML=`<h3 style="font-size:28px;margin:0 0 4px">${escapeHtml(e.name)}</h3><div class="muted">入職日期：${e.startDate}</div><div class="detail-grid"><div class="info-box"><span>目前特休</span><strong>${formatLeaveDays(remainingLeaveDays)} 天</strong></div><div class="info-box"><span>目前年資</span><strong>${s.years} 年 ${s.months} 個月 ${s.days} 天</strong></div><div class="info-box"><span>本期特休期間</span><strong>${p.periodStart?`${formatDate(p.periodStart)} ～ ${formatDate(p.periodEnd)}`:'尚未產生特休'}</strong></div><div class="info-box"><span>已使用特休</span><strong>${formatLeaveDays(e.usedLeaveDays)} 天</strong></div></div><div class="actions"><button class="btn" onclick="showEditView('${e.id}')">編輯員工資料</button><button class="btn secondary" onclick="openLeaveModal('${e.id}')">使用特休</button><button class="btn secondary" onclick="showView('listView')">回員工列表</button></div>`;showView('detailView')}
+    async function renderDeleteList(){const list=document.getElementById('deleteList');const status=document.getElementById('deleteStatus');list.innerHTML='<div class="empty">讀取中...</div>';const employees=await loadEmployees();status.textContent=`共 ${employees.length} 位員工`;if(!employees.length){list.innerHTML='<div class="empty">目前沒有可刪除的員工資料。</div>';return}list.innerHTML=employees.map(e=>`<div class="employee-card"><div class="employee-main"><strong>${escapeHtml(e.name)}</strong><div class="muted">入職日期：${e.startDate}</div></div><div class="muted">刪除後無法還原</div><button class="btn danger" onclick="deleteEmployee('${e.id}')">刪除</button></div>`).join('')}
+    async function openLeaveModal(id){const employees=await loadEmployees();const employee=employees.find(e=>e.id===id);if(!employee)return;const totalLeaveDays=getLeaveDays(parseDate(employee.startDate),getToday());const remainingLeaveDays=getRemainingLeaveDays(totalLeaveDays,employee.usedLeaveDays);currentDetailEmployeeId=id;document.getElementById('leaveModalText').textContent=`請輸入 ${employee.name} 本次使用的特休天數。`;document.getElementById('leaveRemainingNote').textContent=`目前剩餘特休：${formatLeaveDays(remainingLeaveDays)} 天`;document.getElementById('leaveDaysInput').value='';document.getElementById('leaveDaysInput').max=remainingLeaveDays;document.getElementById('leaveStatus').textContent='';document.getElementById('leaveModal').classList.add('show');setTimeout(()=>document.getElementById('leaveDaysInput').focus(),0)}
+    function closeLeaveModal(){document.getElementById('leaveModal').classList.remove('show');document.getElementById('leaveStatus').textContent=''}
 
-    function randomSecret() {
-      const nums = [1,2,3,4,5,6,7,8,9];
-      for (let i = nums.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [nums[i], nums[j]] = [nums[j], nums[i]];
+    async function deleteEmployee(id){const employees=await loadEmployees();const employee=employees.find(e=>e.id===id);const name=employee?employee.name:'這位員工';if(!confirm(`確定要刪除「${name}」嗎？`))return;try{await removeEmployee(id);await renderDeleteList()}catch(err){alert('刪除失敗：'+err.message)}}
+
+    document.getElementById('employeeForm').addEventListener('submit',async e=>{e.preventDefault();if(!db){alert('尚未設定 Supabase');return}const id=document.getElementById('employeeId').value;const name=document.getElementById('employeeName').value.trim();const startDate=document.getElementById('startDate').value;if(!name||!startDate)return;if(parseDate(startDate)>getToday()){alert('入職日期不能晚於今天。');return}document.getElementById('formStatus').textContent='儲存中...';try{if(id)await updateEmployee({id,name,startDate});else await insertEmployee({name,startDate});document.getElementById('formStatus').textContent='已儲存';await showView('listView')}catch(err){document.getElementById('formStatus').textContent='儲存失敗：'+err.message}})
+
+    document.getElementById('leaveForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      if(!currentDetailEmployeeId)return;
+      const employees=await loadEmployees();
+      const employee=employees.find(item=>item.id===currentDetailEmployeeId);
+      if(!employee)return;
+      const totalLeaveDays=getLeaveDays(parseDate(employee.startDate),getToday());
+      const remainingLeaveDays=getRemainingLeaveDays(totalLeaveDays,employee.usedLeaveDays);
+      const inputValue=Number(document.getElementById('leaveDaysInput').value);
+      const status=document.getElementById('leaveStatus');
+      const button=document.getElementById('leaveSubmitButton');
+      if(!Number.isFinite(inputValue) || inputValue<=0){status.textContent='請輸入正確的天數。';return}
+      if(inputValue>remainingLeaveDays){status.textContent=`輸入天數不可大於目前剩餘特休 ${formatLeaveDays(remainingLeaveDays)} 天。`;return}
+      button.disabled=true;
+      status.textContent='送出中...';
+      try{
+        const nextUsedLeaveDays=+(employee.usedLeaveDays + inputValue).toFixed(2);
+        await updateUsedLeave(currentDetailEmployeeId,nextUsedLeaveDays);
+        closeLeaveModal();
+        await showDetail(currentDetailEmployeeId);
+      }catch(err){
+        status.textContent='送出失敗：'+err.message+(err.message.includes('used_leave_days')?'，請先在 Supabase 新增 used_leave_days 欄位。':'');
+      }finally{
+        button.disabled=false;
       }
-      return nums.slice(0, 4);
-    }
+    })
 
-    function startGuess() {
-      state.guessSecret = randomSecret();
-      state.guessInput = [];
-      state.guessHistory = [];
-      renderGuess();
-      console.log('1A2B answer:', state.guessSecret.join(''));
-    }
+    document.getElementById('loginForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      if(!db){document.getElementById('loginStatus').textContent='尚未設定 Supabase URL 與 anon key。';return}
+      const rawAccount=document.getElementById('loginAccount').value.trim();
+      const account=rawAccount.split('@')[0];
+      const email=`${account}${LOGIN_EMAIL_DOMAIN}`;
+      const password=document.getElementById('loginPassword').value;
+      const button=document.getElementById('loginButton');
+      const status=document.getElementById('loginStatus');
+      if(!account){status.textContent='請輸入帳號。';return}
+      button.disabled=true;
+      status.textContent='登入中...';
+      const {data,error}=await db.auth.signInWithPassword({email,password});
+      button.disabled=false;
+      if(error){status.textContent='登入失敗：'+error.message;return}
+      showApp(data.session)
+    })
 
-    function renderGuess() {
-      const slots = $$('#guessSlots .slot');
-      slots.forEach((slot, i) => {
-        slot.textContent = state.guessInput[i] || '';
-        slot.classList.toggle('filled', Boolean(state.guessInput[i]));
-      });
-      $$('#keypad .key').forEach(btn => {
-        const n = Number(btn.dataset.num);
-        btn.disabled = state.guessInput.includes(n) || state.guessInput.length >= 4;
-      });
-      const submit = $('#guessSubmit');
-      submit.disabled = state.guessInput.length !== 4;
-      submit.classList.toggle('ready', state.guessInput.length === 4);
-      const hist = $('#guessHistory');
-      if (!state.guessHistory.length) {
-        hist.innerHTML = '<div class="empty">尚未開始猜測</div>';
-      } else {
-        hist.innerHTML = state.guessHistory.map(row => `
-          <div class="history-row">
-            <span class="dot"></span>
-            <span>${row.guess.split('').join(' ')}</span>
-            <span class="history-result">${row.result}</span>
-          </div>
-        `).join('');
-      }
-    }
-
-    function submitGuess() {
-      if (state.guessInput.length !== 4) {
-        $('#guessSlots').classList.remove('shake');
-        void $('#guessSlots').offsetWidth;
-        $('#guessSlots').classList.add('shake');
-        toast('請輸入 4 位數字');
-        return;
-      }
-      let a = 0, b = 0;
-      state.guessInput.forEach((n, i) => {
-        if (state.guessSecret[i] === n) a++;
-        else if (state.guessSecret.includes(n)) b++;
-      });
-      const guess = state.guessInput.join('');
-      const result = `${a}A${b}B`;
-      state.guessHistory.unshift({ guess, result });
-      state.guessInput = [];
-      renderGuess();
-      if (a === 4) {
-        modal('恭喜猜對！', `答案是 ${guess}，共猜了 ${state.guessHistory.length} 次。`);
-        startGuess();
-      } else {
-        toast(`結果：${result}`);
-      }
-    }
-
-    function setupGuess() {
-      const keypad = $('#keypad');
-      keypad.innerHTML = [1,2,3,4,5,6,7,8,9].map(n => `<button class="key" type="button" data-num="${n}">${n}</button>`).join('');
-      keypad.addEventListener('click', e => {
-        const btn = e.target.closest('[data-num]');
-        if (!btn || btn.disabled) return;
-        const n = Number(btn.dataset.num);
-        if (state.guessInput.includes(n)) return toast('數字不可重複');
-        if (state.guessInput.length >= 4) return;
-        state.guessInput.push(n);
-        btn.classList.remove('pulse'); void btn.offsetWidth; btn.classList.add('pulse');
-        renderGuess();
-      });
-      $('#guessClear').addEventListener('click', () => { state.guessInput = []; renderGuess(); });
-      $('#guessDelete').addEventListener('click', () => { state.guessInput.pop(); renderGuess(); });
-      $('#guessSubmit').addEventListener('click', submitGuess);
-      startGuess();
-    }
-
-    const boardSize = 10;
-    const shipSizes = [5,4,3,2,1];
-    const rows = 'ABCDEFGHIJ'.split('');
-
-    function cellKey(r, c) { return `${r}-${c}`; }
-
-    function placeShips() {
-      const occupied = new Set();
-      const ships = [];
-      shipSizes.forEach(size => {
-        let placed = false;
-        let guard = 0;
-        while (!placed && guard++ < 2000) {
-          const vertical = Math.random() < .5;
-          const r = Math.floor(Math.random() * (vertical ? boardSize - size + 1 : boardSize));
-          const c = Math.floor(Math.random() * (vertical ? boardSize : boardSize - size + 1));
-          const cells = Array.from({ length: size }, (_, i) => cellKey(r + (vertical ? i : 0), c + (vertical ? 0 : i)));
-          if (cells.every(k => !occupied.has(k))) {
-            cells.forEach(k => occupied.add(k));
-            ships.push({ id: ships.length + 1, size, cells, hits: new Set(), sunk: false });
-            placed = true;
-          }
-        }
-      });
-      return ships;
-    }
-
-    function startBattle() {
-      state.battleShips = placeShips();
-      state.battleShots = 0;
-      state.battleHits = 0;
-      state.battleOver = false;
-      $('#battleMessage').className = 'message';
-      $('#battleMessage').textContent = '找出 1、2、3、4、5 格船各一艘。';
-      renderBattleBoard();
-      updateBattleStats();
-      console.log('Battle ships:', state.battleShips.map(s => ({ size: s.size, cells: s.cells })));
-    }
-
-    function renderBattleBoard() {
-      const board = $('#battleBoard');
-      let html = '<div></div>';
-      for (let c = 1; c <= boardSize; c++) html += `<div class="axis">${c}</div>`;
-      for (let r = 0; r < boardSize; r++) {
-        html += `<div class="axis">${rows[r]}</div>`;
-        for (let c = 0; c < boardSize; c++) {
-          html += `<button class="cell" type="button" data-cell="${cellKey(r,c)}" aria-label="${rows[r]}${c+1}"></button>`;
-        }
-      }
-      board.innerHTML = html;
-    }
-
-    function updateBattleStats() {
-      $('#shotCount').textContent = state.battleShots;
-      $('#hitCount').textContent = state.battleHits;
-      $('#shipCount').textContent = state.battleShips.filter(s => !s.sunk).length;
-    }
-
-    function findShipByCell(key) {
-      return state.battleShips.find(s => s.cells.includes(key));
-    }
-
-    function attackCell(btn) {
-      if (state.battleOver || btn.classList.contains('used')) return;
-      const key = btn.dataset.cell;
-      const ship = findShipByCell(key);
-      state.battleShots++;
-      btn.classList.add('used');
-      if (!ship) {
-        btn.classList.add('miss');
-        $('#battleMessage').className = 'message';
-        $('#battleMessage').textContent = `${formatCell(key)} 擊空。`;
-        toast('擊空');
-      } else {
-        state.battleHits++;
-        ship.hits.add(key);
-        btn.classList.add('hit');
-        $('#battleMessage').className = 'message warn';
-        $('#battleMessage').textContent = `${formatCell(key)} 命中！`;
-        if (ship.hits.size === ship.size) {
-          ship.sunk = true;
-          ship.cells.forEach(k => {
-            const cell = $(`[data-cell="${k}"]`);
-            if (cell) { cell.classList.remove('hit'); cell.classList.add('used', 'sunk'); }
-          });
-          $('#battleMessage').className = 'message success';
-          $('#battleMessage').textContent = `擊沉 ${ship.size} 格船！`;
-          toast(`擊沉 ${ship.size} 格船！`);
-          if (state.battleShips.every(s => s.sunk)) {
-            state.battleOver = true;
-            modal('海戰勝利！', `你用 ${state.battleShots} 次射擊擊沉所有船艦。`);
-          }
-        } else {
-          toast('命中');
-        }
-      }
-      updateBattleStats();
-    }
-
-    function formatCell(key) {
-      const [r, c] = key.split('-').map(Number);
-      return `${rows[r]}${c+1}`;
-    }
-
-    function setupBattle() {
-      $('#battleBoard').addEventListener('click', e => {
-        const btn = e.target.closest('.cell');
-        if (btn) attackCell(btn);
-      });
-      $('#battleReset').addEventListener('click', startBattle);
-      startBattle();
-    }
-
-    function setupNavigation() {
-      document.addEventListener('click', e => {
-        const go = e.target.closest('[data-go]');
-        if (!go) return;
-        const target = go.dataset.go;
-        if (target === 'home') showPage('home');
-        if (target === 'guess') showPage('guess');
-        if (target === 'battle') showPage('battle');
-      });
-      $('#modalClose').addEventListener('click', () => $('#winModal').classList.remove('show'));
-      $('#winModal').addEventListener('click', e => { if (e.target.id === 'winModal') $('#winModal').classList.remove('show'); });
-    }
-
-    function init() {
-      setupNavigation();
-      setupGuess();
-      setupBattle();
-      updateClock();
-      setInterval(updateClock, 1000 * 15);
-    }
+    async function logout(){if(db)await db.auth.signOut();document.getElementById('appShell').style.display='none';document.getElementById('authView').style.display='grid';document.getElementById('loginAccount').value='';document.getElementById('loginPassword').value='';document.getElementById('loginStatus').textContent='已登出';showView('homeView')}
+    function showApp(session){document.getElementById('authView').style.display='none';document.getElementById('appShell').style.display='block';showView('homeView')}
+    async function init(){document.getElementById('authConfigNotice').style.display=supabaseReady?'none':'block';if(!db)return;const {data}=await db.auth.getSession();if(data.session)showApp(data.session);db.auth.onAuthStateChange((_event,session)=>{if(session)showApp(session);else{document.getElementById('appShell').style.display='none';document.getElementById('authView').style.display='grid'}})}
+    document.getElementById('leaveModal').addEventListener('click',e=>{if(e.target.id==='leaveModal')closeLeaveModal()})
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLeaveModal()})
 
     init();
   </script>
